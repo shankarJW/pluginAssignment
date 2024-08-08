@@ -98,3 +98,78 @@ function wp_book_save_meta_box_data($post_id) {
     }
 }
 add_action('save_post', 'wp_book_save_meta_box_data');
+
+// Register Shortcode
+function wp_book_shortcode($atts) {
+    $atts = shortcode_atts(array(
+        'id' => '',
+        'author_name' => '',
+        'year' => '',
+        'category' => '',
+        'tag' => '',
+        'publisher' => ''
+    ), $atts);
+
+    $query_args = array(
+        'post_type' => 'book',
+        'posts_per_page' => -1
+    );
+
+    if ($atts['id']) {
+        $query_args['p'] = $atts['id'];
+    }
+    if ($atts['author_name']) {
+        $query_args['meta_query'][] = array(
+            'key' => '_author_name',
+            'value' => $atts['author_name'],
+            'compare' => 'LIKE'
+        );
+    }
+    if ($atts['year']) {
+        $query_args['meta_query'][] = array(
+            'key' => '_year',
+            'value' => $atts['year'],
+            'compare' => '='
+        );
+    }
+    if ($atts['category']) {
+        $query_args['tax_query'][] = array(
+            'taxonomy' => 'book_category',
+            'field' => 'slug',
+            'terms' => $atts['category']
+        );
+    }
+    if ($atts['tag']) {
+        $query_args['tax_query'][] = array(
+            'taxonomy' => 'book_tag',
+            'field' => 'slug',
+            'terms' => $atts['tag']
+        );
+    }
+    if ($atts['publisher']) {
+        $query_args['meta_query'][] = array(
+            'key' => '_publisher',
+            'value' => $atts['publisher'],
+            'compare' => 'LIKE'
+        );
+    }
+
+    $query = new WP_Query($query_args);
+
+    $output = '<div class="book-list">';
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $output .= '<h2>' . get_the_title() . '</h2>';
+            $output .= '<p>Author: ' . get_post_meta(get_the_ID(), '_author_name', true) . '</p>';
+            // Add more details as needed
+        }
+        wp_reset_postdata();
+    } else {
+        $output .= '<p>No books found.</p>';
+    }
+    $output .= '</div>';
+
+    return $output;
+}
+add_shortcode('book', 'wp_book_shortcode');
