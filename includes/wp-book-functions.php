@@ -1,5 +1,5 @@
 <?php 
-// Register Custom Post Type
+
 function wp_book_register_post_type() {
     $args = array(
         'labels' => array(
@@ -24,9 +24,9 @@ function wp_book_register_post_type() {
 add_action('init', 'wp_book_register_post_type');
 
 
-// Register Custom Taxonomies
+
 function wp_book_register_taxonomies() {
-    // Book Category (Hierarchical)
+    
     $args = array(
         'labels' => array(
             'name' => 'Book Categories',
@@ -46,7 +46,7 @@ function wp_book_register_taxonomies() {
     );
     register_taxonomy('book_category', 'book', $args);
 
-    // Book Tag (Non-Hierarchical)
+    
     $args = array(
         'labels' => array(
             'name' => 'Book Tags',
@@ -65,3 +65,36 @@ function wp_book_register_taxonomies() {
     register_taxonomy('book_tag', 'book', $args);
 }
 add_action('init', 'wp_book_register_taxonomies');
+
+
+// Add Custom Meta Box
+function wp_book_add_meta_box() {
+    add_meta_box(
+        'book_meta_box',        
+        'Book Details',         
+        'wp_book_meta_box_html', 
+        'book'                  
+    );
+}
+add_action('add_meta_boxes', 'wp_book_add_meta_box');
+
+function wp_book_meta_box_html($post) {
+    $author_name = get_post_meta($post->ID, '_author_name', true);
+    $price = get_post_meta($post->ID, '_price', true);
+
+    echo '<label for="author_name">Author Name:</label>';
+    echo '<input type="text" id="author_name" name="author_name" value="' . esc_attr($author_name) . '" />';
+    echo '<br><br>';
+    echo '<label for="price">Price:</label>';
+    echo '<input type="text" id="price" name="price" value="' . esc_attr($price) . '" />';
+}
+
+function wp_book_save_meta_box_data($post_id) {
+    if (array_key_exists('author_name', $_POST)) {
+        update_post_meta($post_id, '_author_name', sanitize_text_field($_POST['author_name']));
+    }
+    if (array_key_exists('price', $_POST)) {
+        update_post_meta($post_id, '_price', sanitize_text_field($_POST['price']));
+    }
+}
+add_action('save_post', 'wp_book_save_meta_box_data');
