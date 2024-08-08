@@ -7,6 +7,7 @@ Author: shankar
 */
 
 include_once(plugin_dir_path(__FILE__) . 'includes/wp-book-functions.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/wp-book-admin.php');
 
 register_activation_hook(__FILE__, 'wp_book_activate');
 register_deactivation_hook(__FILE__, 'wp_book_deactivate');
